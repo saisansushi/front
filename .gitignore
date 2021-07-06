@@ -33,3 +33,5 @@ package.json
 yarn.lock
 
 src/react-app-env.d.ts
+
+tsconfig.json
