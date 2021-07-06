@@ -18,11 +18,11 @@ import {
  *  в случае если нет координат адресса, можно указать его на карте для получения координат и вхождения полигон доставки НЕУДОБНО возможно более опытным админам разрешить выбирать районы доставки руками из списка
  *
  * */
-interface IEditAddressFragment extends PropsFromRedux {
+interface IEditAddress extends PropsFromRedux {
 }
 
 
-const EditAddressFragment = (props: IEditAddressFragment) => {
+const EditAddress = (props: IEditAddress) => {
     const pointLat = 44.9798045; // стартовые позиции точки прожаж, на несколько точек брать с базы
     const pointLon = 38.9417658;
     const token = '7acc767bfb1f8280c0f8a3f7bc67d589d7027ed8';  // токен подсказки и ниже токен карт перетащить в конфиг
@@ -382,6 +382,6 @@ const mapDispatch = {
 
 const connector = connect(mapState, mapDispatch)
 type PropsFromRedux = ConnectedProps<typeof connector>
-export default connector(EditAddressFragment)
+export default connector(EditAddress)
 
 

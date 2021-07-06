@@ -17,7 +17,7 @@ const   MainView = (props:IMainView) => {
                 </Main>
                 <Footer spaceAround >
                                 <Button  variant="outlined"   onClick={() => {
-                                    props.changePage("admin")
+                                  //  props.changePage("admin")
                                 }}>Режим администратора
                                 </Button>
                                 <Button variant="outlined"   onClick={() => {

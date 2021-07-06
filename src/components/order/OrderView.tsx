@@ -13,7 +13,7 @@ import {
 } from "@material-ui/core";
 
 import {DT} from '../../redux/dispatchTypes'
-import EditAddressFragment from "./EditAddressFragment";
+import EditAddress from "./EditAddress";
 
 
 /**
@@ -153,7 +153,7 @@ const OrderView = (props: IOrderView) => {
             <Question title="Заказ НЕ сохранен!" body="Сохранить?" callback={cbQuestionExit} typeButton={'no-yes'}/>
     )
 
-    const address = props.navigation.addressMode !== 'none' && <EditAddressFragment/>
+    const address = props.navigation.addressMode !== 'none' && <EditAddress/>
 
     const btnMenu = props.navigation.menuMode && <Button variant="outlined" style={{margin: '1px'}} onClick={() => {
         props.changeMenuMode(false)

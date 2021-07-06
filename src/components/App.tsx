@@ -5,7 +5,6 @@ import MainView from "./main/MainView";
 import ListOrders from "./listOrders/ListOrders";
 import OrderView from "./order/OrderView";
 import NewOrder from "./order/NewOrder";
-//import AdminView from "./admin/AdminView";
 import {connect, ConnectedProps} from 'react-redux';
 import Question from "./common/Question";
 import {Preloader} from './styledComponents/stilesComponents';
