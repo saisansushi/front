@@ -31,3 +31,5 @@ package.json
 .idea/
 
 yarn.lock
+
+src/react-app-env.d.ts
