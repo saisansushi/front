@@ -6,7 +6,7 @@ import InputPhone from "../common/NumberInput";
 import GetName from "./GetName";
 import GetVendor from "./GetVendor";
 import { Preloader } from "../styledComponents/stilesComponents";
-import axios from "axios";
+import { customerAPI, orderAPI } from "../API";
 
 // новый заказ
 // запрашиваем откруда заказ
@@ -64,20 +64,8 @@ const NewOrder = (props: INewOrder) => {
   const checkCustomer = (phone: string) => {
     showPreloader(true);
     // проверка номера телефона на сервере
-    axios
-      .post(
-        props.apiURL + "customer/check_customer_by_phone/",
-        {
-          terminalId: props.terminalId,
-          phone: phone,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Token-Authorization-X": props.token,
-          },
-        }
-      )
+    customerAPI
+      .checkCustomerByPhone(props.terminalId, phone)
       .then((response) => {
         showPreloader(false);
         let customerArr = response.data.customer;
@@ -144,20 +132,11 @@ const NewOrder = (props: INewOrder) => {
   const createOrder = () => {
     showPreloader(true);
     // создание заказа
-    axios
-      .post(
-        props.apiURL + "order/create_order/",
-        {
-          terminalId: props.terminalId,
-          newOrderData: newOrderData.current,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Token-Authorization-X": props.token,
-          },
-        }
-      )
+    orderAPI
+      .createOrder({
+        terminalId: props.terminalId,
+        newOrderData: newOrderData.current,
+      })
       .then((response) => {
         props.currentOrder(response.data.order.orderId);
         showPreloader(false);
@@ -217,19 +196,13 @@ const NewOrder = (props: INewOrder) => {
 };
 
 interface ImapState {
-  config: {
-    apiURL: string;
-    token: string;
-  };
   appState: {
     terminalId: number;
   };
 }
 
 const mapState = (state: ImapState) => ({
-  apiURL: state.config.apiURL,
-  terminalId: state.appState.terminalId,
-  token: state.config.token,
+  terminalId: state.appState.terminalId
 });
 const mapDispatch = {
   currentOrder: (orderId: number) => ({
@@ -242,7 +215,6 @@ const mapDispatch = {
     networkError: action,
   }),
 };
-const connector = connect(mapState, mapDispatch)
-type PropsFromRedux = ConnectedProps<typeof connector>
-export default connector(NewOrder)
-
+const connector = connect(mapState, mapDispatch);
+type PropsFromRedux = ConnectedProps<typeof connector>;
+export default connector(NewOrder);

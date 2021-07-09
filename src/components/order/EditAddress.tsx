@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
+import {initialConfig}  from "../../config"
 import { DT } from "../../redux/dispatchTypes";
 import {
   AddressSuggestions,
@@ -7,7 +8,6 @@ import {
   DaDataSuggestion,
 } from "react-dadata";
 import "react-dadata/dist/react-dadata.css";
-import axios from "axios";
 import {
   FullscreenControl,
   Map,
@@ -25,6 +25,7 @@ import {
   Grid,
   TextField,
 } from "@material-ui/core";
+import { addressAPI } from "../API";
 
 /**
  *  Ввод и редактирование адреса, проверка на вхождение в полигон доставки
@@ -38,10 +39,6 @@ interface IEditAddress extends PropsFromRedux {}
 const EditAddress = (props: IEditAddress) => {
   const pointLat = 44.9798045; // стартовые позиции точки прожаж, на несколько точек брать с базы
   const pointLon = 38.9417658;
-  const configHeaders = {
-    "Content-Type": "application/json",
-    "Token-Authorization-X": props.config.token,
-  };
   const edit = props.navigation.addressMode === "edit";
 
   const initAddressEdit = (el: string) => {
@@ -199,14 +196,10 @@ const EditAddress = (props: IEditAddress) => {
     }
   };
 
-  //  COMBINE NEW & UPDATE
-
   const postNew = (data: object) => {
     props.setPreloader(true);
-    axios
-      .post(props.config.apiURL + "address/newAddress/", data, {
-        headers: configHeaders,
-      })
+    addressAPI
+      .postNew(data)
       .then((response) => {
         props.setPreloader(false);
         let newAddresses = response.data.address.addresses;
@@ -228,10 +221,8 @@ const EditAddress = (props: IEditAddress) => {
   };
   const postUpdate = (data: object) => {
     props.setPreloader(true);
-    axios
-      .post(props.config.apiURL + "address/updateAddress/", data, {
-        headers: configHeaders,
-      })
+    addressAPI
+      .postUpdate(data)
       .then((response) => {
         props.setPreloader(false);
         let newAddresses = response.data.address.addresses;
@@ -252,18 +243,12 @@ const EditAddress = (props: IEditAddress) => {
 
   const getPolygon = () => {
     props.setPreloader(true);
-    axios
-      .post(
-        props.config.apiURL + "address/get_polygon/",
-        {
-          terminalId: props.appState.terminalId,
-          geoLat: geoLat,
-          geoLon: geoLon,
-        },
-        {
-          headers: configHeaders,
-        }
-      )
+    addressAPI
+      .getPolygon({
+        terminalId: props.appState.terminalId,
+        geoLat: geoLat,
+        geoLon: geoLon,
+      })
       .then((response) => {
         props.setPreloader(false);
         let polygon = response.data.address.polygon;
@@ -292,7 +277,7 @@ const EditAddress = (props: IEditAddress) => {
   };
 
   const yMap = (
-    <YMaps query={{ apikey: props.config.YMapsApikey }}>
+    <YMaps query={{ apikey: initialConfig.YMapsApikey }}>
       <Map
         modules={["geolocation", "geocode"]}
         state={{
@@ -351,7 +336,7 @@ const EditAddress = (props: IEditAddress) => {
 
         <Grid item xs={12} style={{ padding: "10px" }}>
           <AddressSuggestions
-            token={props.config.tokenDaData}
+            token={initialConfig.tokenDaData}
             count={6}
             customInput={TextField}
             onChange={selectSuggestion}
@@ -424,8 +409,6 @@ const EditAddress = (props: IEditAddress) => {
 
 interface ImapState {
   config: {
-    token: string;
-    apiURL: string;
     tokenDaData: string;
     YMapsApikey: string;
   };
@@ -449,7 +432,6 @@ interface ImapState {
 
 const mapState = (state: ImapState) => {
   return {
-    config: state.config,
     appState: state.appState,
     order: state.order.orderData,
     navigation: state.navigation,

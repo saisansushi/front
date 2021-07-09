@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { orderAPI } from "../API";
 import { connect, ConnectedProps } from "react-redux";
 import Question from "../common/Question";
 import CustomerFragment from "./CustomerFragment";
@@ -49,53 +49,27 @@ const OrderView = (props: IOrderView) => {
   };
 
   const unlockAndExit = () => {
-    unlockOrder().then(() => props.changePage("list"));
-  };
-
-  const unlockOrder = () => {
     showPreloader(true);
-    const request = axios.post(
-      props.apiURL + "order/unlock_order/",
-      {
-        terminalId: props.terminalId,
-        orderId: props.openOrderId,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Token-Authorization-X": props.token,
-        },
-      }
-    );
-    request
+    orderAPI
+      .unlockOrder(props.terminalId, props.openOrderId)
       .then((response) => {
         showPreloader(false);
+        props.changePage("list");
       })
       .catch((error) => {
         console.log(error);
         showPreloader(false);
         props.setNetworkError(true);
       });
-    return request;
   };
 
   const saveOrder = () => {
     showPreloader(true);
-    const request = axios.post(
-      props.apiURL + "order/save_order/",
-      {
-        terminalId: props.terminalId,
-        orderId: props.openOrderId,
-        orderData: props.order,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Token-Authorization-X": props.token,
-        },
-      }
-    );
-    request
+    return orderAPI.saveOrder({
+      terminalId: props.terminalId,
+      orderId: props.openOrderId,
+      orderData: props.order,
+    })
       .then((response) => {
         props.orderSetContent({ modified: false });
         showPreloader(false);
@@ -105,25 +79,13 @@ const OrderView = (props: IOrderView) => {
         showPreloader(false);
         props.setNetworkError(true);
       });
-    return request;
   };
 
   useEffect(() => {
     // загружаемые адреса каждый раз проверяются на вхождение в полигон, он мог измениться. Надо сделать марикорвку нормальных адресов и не нормальных
-    axios
-      .post(
-        props.apiURL + "order/get_order/",
-        {
-          terminalId: props.terminalId,
-          orderId: props.openOrderId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Token-Authorization-X": props.token,
-          },
-        }
-      )
+
+    orderAPI
+      .getOrder(props.terminalId, props.openOrderId)
       .then((response) => {
         let order = response.data.order[0];
         props.orderSetContent(order);
@@ -250,10 +212,6 @@ const OrderView = (props: IOrderView) => {
 };
 
 interface ImapState {
-  config: {
-    apiURL: string;
-    token: string;
-  };
   appState: {
     terminalId: number;
     networkError: boolean;
@@ -273,9 +231,7 @@ interface ImapState {
 
 const mapState = (state: ImapState) => ({
   navigation: state.navigation,
-  apiURL: state.config.apiURL,
   terminalId: state.appState.terminalId,
-  token: state.config.token,
   openOrderId: state.appState.openOrderId,
   order: state.order.orderData,
 });

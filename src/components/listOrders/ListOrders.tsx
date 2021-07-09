@@ -9,7 +9,6 @@ import {
   TableHead,
   TableRow,
 } from "@material-ui/core";
-import axios from "axios";
 import { connect, ConnectedProps } from "react-redux";
 import {
   Footer,
@@ -21,6 +20,7 @@ import {
   Wrapper,
 } from "../styledComponents/stilesComponents";
 import { DT } from "../../redux/dispatchTypes";
+import { orderAPI } from "../API";
 
 interface IListOrder extends PropsFromRedux {}
 
@@ -30,19 +30,9 @@ const ListOrder = (props: IListOrder) => {
   useEffect(() => {
     props.resetOrder(); // сбросить данные предыдущего просмотра ордера
     // get orders from server
-    axios
-      .post(
-        props.apiURL + "order/get_list/",
-        {
-          terminalId: props.terminalId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "Token-Authorization-X": props.token,
-          },
-        }
-      )
+
+    orderAPI
+      .getList(props.terminalId)
       .then((response) => {
         if (response.data.order) {
           setOrders(response.data.order);
@@ -136,10 +126,6 @@ const ListOrder = (props: IListOrder) => {
 };
 
 interface ImapState {
-  config: {
-    apiURL: string;
-    token: string;
-  };
   appState: {
     terminalId: number;
     networkError: boolean;
@@ -147,9 +133,7 @@ interface ImapState {
 }
 
 const mapState = (state: ImapState) => ({
-  apiURL: state.config.apiURL,
   terminalId: state.appState.terminalId,
-  token: state.config.token,
   networkError: state.appState.networkError,
 });
 
@@ -166,6 +150,6 @@ const mapDispatch = {
   resetOrder: () => ({ type: DT.resetOrder, content: null }),
 };
 
-const connector = connect(mapState, mapDispatch)
-type PropsFromRedux = ConnectedProps<typeof connector>
-export default connector(ListOrder)
+const connector = connect(mapState, mapDispatch);
+type PropsFromRedux = ConnectedProps<typeof connector>;
+export default connector(ListOrder);
