@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { connect, ConnectedProps } from "react-redux";
-import {initialConfig}  from "../../config"
+import { initialConfig } from "../../config";
 import { DT } from "../../redux/dispatchTypes";
 import {
   AddressSuggestions,
@@ -173,6 +173,7 @@ const EditAddress = (props: IEditAddress) => {
     }
 
     let data = {
+      addressId: props.order.addressId, //id текущего выбранного адреса, даже при добавлении нового
       terminalId: props.appState.terminalId,
       customerId: props.order.customer.customerId,
       orderId: props.order.orderId,
@@ -189,48 +190,22 @@ const EditAddress = (props: IEditAddress) => {
       fiasLevel: fiasLevel,
       comment: comment,
     };
-    if (props.navigation.addressMode === "new") {
-      postNew(data);
-    } else {
-      postUpdate({ ...data, addressId: props.order.addressId });
-    }
-  };
 
-  const postNew = (data: object) => {
     props.setPreloader(true);
     addressAPI
-      .postNew(data)
+      .saveAddress(data, edit)
       .then((response) => {
         props.setPreloader(false);
-        let newAddresses = response.data.address.addresses;
-        let newAddressId = response.data.address.addressId;
-        if (newAddresses) {
+        if (response.data.address.addresses) {
           props.orderSetContent({
-            addresses: newAddresses,
-            addressId: newAddressId,
+            addresses: response.data.address.addresses,
             shippingMethod: "delivery",
           });
-          props.setAddressMode("none");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
-        props.setPreloader(false);
-        props.setNetworkError(true);
-      });
-  };
-  const postUpdate = (data: object) => {
-    props.setPreloader(true);
-    addressAPI
-      .postUpdate(data)
-      .then((response) => {
-        props.setPreloader(false);
-        let newAddresses = response.data.address.addresses;
-        if (newAddresses) {
-          props.orderSetContent({
-            addresses: newAddresses,
-            shippingMethod: "delivery",
-          });
+          if (!edit) {
+            props.orderSetContent({
+              addressId: response.data.address.addressId,
+            });
+          }
           props.setAddressMode("none");
         }
       })
@@ -242,6 +217,11 @@ const EditAddress = (props: IEditAddress) => {
   };
 
   const getPolygon = () => {
+    if (!geoLat || !geoLon) {
+      setPolygonId(-1);
+      setPolygonDescription("Нет координат адреса доставки!");
+      return;
+    }
     props.setPreloader(true);
     addressAPI
       .getPolygon({

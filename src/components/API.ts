@@ -1,5 +1,5 @@
 import axios from "axios";
-import {initialConfig}  from "../config"
+import { initialConfig } from "../config";
 
 const instance = axios.create({
   withCredentials: false, // cors
@@ -16,7 +16,7 @@ export const orderAPI = {
     return instance.get(`order/get_list/${terminalId}/`);
   },
   createOrder(data: {}) {
-    return instance.post("order/create_order/", { data });
+    return instance.post("order/create_order/", data);
   },
   saveOrder(data: {}) {
     return instance.post("order/save_order/", data);
@@ -30,17 +30,13 @@ export const orderAPI = {
 };
 
 export const addressAPI = {
-  postNew(data: {}) {
-    return instance.post("address/newAddress/", { data });
+  saveAddress(data: {}, edit: boolean) {
+    if (edit) {
+      return instance.post("address/updateAddress/", data);
+    }
+    return instance.post("address/newAddress/", data);
   },
-  postUpdate(data: {}) {
-    return instance.post("address/updateAddress/", { data });
-  },
-  getPolygon(data: {
-    terminalId: number;
-    geoLat: number | null;
-    geoLon: number | null;
-  }) {
+  getPolygon(data: { terminalId: number; geoLat: number; geoLon: number }) {
     return instance.get(
       `address/get_polygon/${data.terminalId}/${data.geoLat}/${data.geoLon}/`
     );
